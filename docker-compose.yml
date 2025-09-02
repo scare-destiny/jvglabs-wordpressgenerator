@@ -1,0 +1,37 @@
+# docker-compose.yml
+services:
+  db:
+    image: mariadb:10.11
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp
+      MYSQL_PASSWORD: wp
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wp:
+    image: wordpress:6.4
+    restart: always
+    depends_on: [db]
+    ports:
+      - "80:80"           # Render/Railway will map this automatically
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DB_NAME: wordpress
+
+      # the variables below are consumed by the init script
+      WP_URL:        ${WP_URL}
+      WP_TITLE:      ${WP_TITLE}
+      WP_ADMIN_USER: ${WP_ADMIN_USER}
+      WP_ADMIN_PASS: ${WP_ADMIN_PASS}
+      WP_ADMIN_MAIL: ${WP_ADMIN_MAIL}
+    volumes:
+      - wp_data:/var/www/html
+      - ./wp-init.sh:/docker-entrypoint-init.d/10-wp-init.sh
+volumes:
+  db_data:
+  wp_data:
